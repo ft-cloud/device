@@ -1,5 +1,5 @@
 var uuid = require('uuid');
-const fetch = require("node-fetch");
+const fetch = require('node-fetch');
 
 var device = {
 
@@ -46,11 +46,11 @@ var device = {
                          AND device = ?`;
 
             global.connection.query(sql, [useruuid, deviceuuid], function (err, result) {
-                fetch("http://account:3000/api/v1/account/isUserAdmin?uuid="+useruuid).then(result => result.json().then(parsed => {
+                fetch("http://account:3000/api/v1/account/isUserAdmin?uuid="+useruuid).then(result => result.json()).then(parsed => {
 
                     resolve((result && result[0]) || parsed.isAdmin);
 
-                }));
+                });
 
 
             });
@@ -250,7 +250,7 @@ var device = {
                         });
 
                     } else {
-                        fetch("http://account:3000/api/v1/account/isUserAdmin?uuid="+useruuid).then(result => result.json().then(parsed => {
+                        fetch("http://account:3000/api/v1/account/isUserAdmin?uuid="+useruuid).then(result => result.json()).then(parsed => {
 
                             if (parsed.isAdmin) {
                                 var sql = `SELECT name, uuid, config, deviceUUID, online, statusInfo
@@ -278,7 +278,7 @@ var device = {
                                     errorMessage: "No Access!"
                                 });
                             }
-                        }));
+                        });
 
 
                     }
