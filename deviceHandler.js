@@ -1,5 +1,5 @@
 const {app} = require('./deviceServer');
-const session = require('sessionLib/session');
+const session = require('sessionlib/session');
 const device = require('./device');
 
 module.exports.init = function initDevicePaths() {
