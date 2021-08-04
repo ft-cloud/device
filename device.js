@@ -1,4 +1,5 @@
 var uuid = require('uuid');
+const fetch = require("node-fetch");
 
 var device = {
 
