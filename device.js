@@ -3,21 +3,6 @@ const axios = require('axios');
 
 var device = {
 
-    createDeviceEntry: function (deviceUUID, name, callback) {
-        if (!deviceUUID) callback(undefined);
-        const uuidGen = uuid.v4();
-        var sql = `INSERT INTO deviceData (uuid, name, config, deviceUUID)
-                   VALUES (?, ?, '{}', ?)`;
-
-        global.connection.query(sql, [uuidGen, name, deviceUUID], function (err, result) {
-            if (err) throw err;
-
-            callback(uuidGen);
-        });
-
-
-    },
-
 
     getDeviceConfig: function (uuid, deviceUUID, callback) {
         if (!uuid) callback(undefined);
@@ -60,17 +45,7 @@ var device = {
     },
 
 
-    storeUserDevices: function (userDeviceUUID, userUUID, deviceUUID, callback) {
-        if (!userDeviceUUID) callback(undefined);
-        var sql_addDevicePermission = `INSERT INTO userDeviceAccess (user, device, deviceType)
-                                       VALUES (?, ?, ?)`;
 
-        global.connection.query(sql_addDevicePermission, [userUUID, userDeviceUUID, deviceUUID], function (err, result) {
-            if (err) throw err;
-            callback();
-        });
-
-    },
 
 
     updateDeviceConfig: function (deviceuuid, key, value) {
