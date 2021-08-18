@@ -226,8 +226,8 @@ var device = {
 
                     } else {
                         axios("http://account:3000/api/v1/account/isUserAdmin?uuid="+useruuid).then(parsed => {
-                            console.log(parsed.isAdmin)
-                            if (parsed.isAdmin) {
+                            console.log(parsed.data.isAdmin)
+                            if (parsed.data.isAdmin) {
                                 var sql = `SELECT name, uuid, config, deviceUUID, online, statusInfo
                                            FROM deviceData d
                                            WHERE (d.uuid = ?)`;
