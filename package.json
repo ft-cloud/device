@@ -5,7 +5,9 @@
   "main": "deviceServer.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node deviceServer.js"
+    "start": "node deviceServer.js",
+    "debug": "nodemon deviceServer.js"
+
   },
   "author": "FT",
   "license": "ISC",
@@ -18,5 +20,8 @@
     "node-fetch": "^2.6.1",
     "sessionlib": "github:ft-cloud/sessionLib",
     "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
   }
 }
