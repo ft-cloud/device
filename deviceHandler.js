@@ -107,25 +107,25 @@ module.exports.init = function initDevicePaths() {
     });
 
 
-    app.get('/api/v1/device/changeDeviceName', (req, res) => {
+    app.post('/api/v1/device/changeDeviceName', (req, res) => {
 
-        if (req.query.session && req.query.device && req.query.newName) {
-            if(req.query.newName.toString().length<4&&req.query.newName.toString().length>49) {
+        if (req.body.session && req.body.device && req.body.newName) {
+            if(req.body.newName.toString().length<4&&req.body.newName.toString().length>49) {
                 res.send(`{"success":false,"error":"String too long"}`);
                 return;
             }
-            session.validateSession(req.query.session.toString(), (isValid) => {
+            session.validateSession(req.body.session.toString(), (isValid) => {
                 if (isValid) {
-                    session.reactivateSession(req.query.session);
-                    session.getUserUUID(req.query.session.toString(), (uuid) => {
+                    session.reactivateSession(req.body.session);
+                    session.getUserUUID(req.body.session.toString(), (uuid) => {
                         if (uuid) {
 
-                            device.getUserSpecificDeviceInfo(uuid, req.query.device.toString(), (devices) => {
+                            device.getUserSpecificDeviceInfo(uuid, req.body.device.toString(), (devices) => {
 
                                 if(devices.error) {
                                     res.send(JSON.stringify(devices));
                                 }else{
-                                    device.changeDeviceName(req.query.device,req.query.newName,(result) => {
+                                    device.changeDeviceName(req.body.device,req.body.newName,(result) => {
                                         if(result) {
                                             res.send(`{"success":true}`)
                                         }else{
