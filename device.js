@@ -112,36 +112,26 @@ var device = {
 
     deleteAPIKey: function (deviceuuid, callback) {
 
-        var sql = `DELETE
-                   FROM session
-                   WHERE usedBy = ?`;
-        global.connection.query(sql, [deviceuuid], function (err, result) {
 
+        const session = global.database.collection("session");
+        session.deleteOne({usedBy:deviceuuid}).then(()=>{
             callback();
-
-
-        });
+        })
 
 
     },
 
     getDeviceUUID: function (apiKey, callback) {
 
-
-        var sql = `SELECT usedBy
-                   FROM session
-                   WHERE uuid = ?`;
-        global.connection.query(sql, [apiKey], function (err, result) {
-
-            if (result[0] != undefined) {
-                callback(result[0].usedBy);
-            } else {
+        const session = global.database.collection("session");
+        session.findOne({uuid:apiKey}).then(result => {
+            if(result!==null&&result.usedBy!=null) {
+                callback(result.usedBy);
+            } else{
                 callback(undefined);
+
             }
-
-
-        });
-
+        })
 
     },
 

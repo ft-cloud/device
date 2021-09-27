@@ -4,6 +4,15 @@ const fs = require("fs");
 const app = express();
 module.exports.app = app;
 
+const { MongoClient } = require("mongodb");
+const uri = `mongodb://root:${process.env.MYSQL_ROOT_PASSWORD}@mongo:27017/?authSource=admin&readPreference=primary&directConnection=true&ssl=false`
+const client = new MongoClient(uri);
+
+client.connect().then(()=> {
+    global.database = client.db("cloud");
+
+})
+
 const cors = require('cors');
 
 const deviceHandler = require('./deviceHandler')
