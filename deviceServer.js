@@ -16,22 +16,14 @@ client.connect().then(()=> {
 const cors = require('cors');
 
 const deviceHandler = require('./deviceHandler')
-const mysql = require('mysql');
 
-global.connection = mysql.createConnection({
-    host: 'database',
-    user: 'root',
-    password: process.env.MYSQL_ROOT_PASSWORD,
-    database: "cloud",
-    connectTimeout: 5000
-});
+
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 
 
-global.connection.connect();
 
 
 app.use(cors());

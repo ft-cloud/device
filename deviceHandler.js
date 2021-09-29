@@ -175,7 +175,7 @@ module.exports.init = function initDevicePaths() {
 
                                     device.getDeviceConfig(uuid, req.query.device.toString(), (devices) => {
                                         if (devices) {
-                                            res.send(`{"success":true,"data":${devices}}`);
+                                            res.send(`{"success":true,"data":${JSON.stringify(devices)}}`);
                                         } else {
                                             res.send(`{"success":false}`);
                                         }
@@ -262,7 +262,7 @@ module.exports.init = function initDevicePaths() {
 
                                 if (result) {
                                     device.getStatusInfo(req.query.deviceuuid).then(r => {
-                                        res.send(`{"success":true,"data":${r}}`);
+                                        res.send(`{"success":true,"data":${JSON.stringify(r)}}`);
 
                                     })
 
@@ -310,7 +310,7 @@ module.exports.init = function initDevicePaths() {
                             device.checkUserDeviceAccessPermission(uuid,req.query.deviceuuid).then((result)=> {
                                 if(result) {
 
-                                    device.deleteDeviceConnection(req.query.deviceuuid, (result) => {
+                                    device.deleteDeviceConnection(uuid,req.query.deviceuuid, (result) => {
                                         if (result) {
                                             device.deleteAPIKey(req.query.deviceuuid, () => {
 

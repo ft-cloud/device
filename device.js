@@ -5,41 +5,32 @@ var device = {
 
 
     getDeviceConfig: function (uuid, deviceUUID, callback) {
-        if (!uuid) callback(undefined);
-
-        var sql = `SELECT config
-                   FROM deviceData
-                   WHERE uuid = ?`;
-        global.connection.query(sql, [deviceUUID], function (err, result) {
-
-            if (result && result[0]) {
-                callback(result[0].config);
-
-            } else {
+        if (!uuid) callback(undefined); //TODO why?
+        const deviceData = global.database.collection("deviceData");
+        deviceData.findOne({uuid:deviceUUID}).then(res=>{
+            if(res.config!=null){
+                callback(res.config)
+            }else{
                 callback(undefined);
+
             }
-
-        });
-
+        })
     },
 
     checkUserDeviceAccessPermission: function (useruuid, deviceuuid) {
         return new Promise(function (resolve, reject) {
-            var sql = `SELECT *
-                       FROM userDeviceAccess
-                       WHERE user = ?
-                         AND device = ?`;
+            const account = global.database.collection("account");
+            account.findOne({uuid:useruuid}).then(res=>{
 
-            global.connection.query(sql, [useruuid, deviceuuid], function (err, result) {
-                axios("http://account:3000/api/v1/account/isUserAdmin?uuid="+useruuid).then(parsed => {
+                    if(res!=null&&res.devices!=null&&res.devices.indexOf(deviceuuid)!==-1){
+                        resolve(true);
+                    }else{
+                        axios("http://account:3000/api/v1/account/isUserAdmin?uuid="+useruuid).then(parsed => {
+                            resolve(parsed.data.isAdmin);
+                        });
+                    }
 
-                    resolve((result && result[0]) || parsed.data.isAdmin);
-
-                });
-
-
-            });
-
+            })
         });
 
     },
@@ -49,66 +40,40 @@ var device = {
 
 
     updateDeviceConfig: function (deviceuuid, key, value) {
-
         return new Promise(function (resolve, reject) {
-
-            var sql = `SELECT config
-                   FROM deviceData
-                   WHERE (uuid = ?)`;
-            global.connection.query(sql, [deviceuuid], function (err, result) {
-                var configJson = JSON.parse(result[0].config);
-
-                configJson[String(key)] = String(value);
-                var setSQL = `UPDATE deviceData
-                          SET config = ?
-                          WHERE uuid = ?`;
-                global.connection.query(setSQL, [JSON.stringify(configJson), deviceuuid], function (err, SETresult) {
-                    resolve();
-
-
-                });
-
-
-            });
+            const deviceData = global.database.collection("deviceData");
+            deviceData.update({uuid:deviceuuid},{$push:{config: {key: value}}}).then(()=> {resolve();})
         })
 
     },
 
-    deleteDeviceConnection: function (deviceuuid, callback) {
+    deleteDeviceConnection: function (useruuid,deviceuuid, callback) {
 
-        var sql = `DELETE
-                   FROM userDeviceAccess
-                   WHERE device = ?`;
-        global.connection.query(sql, [deviceuuid], function (err, result) {
-            if (result.affectedRows > 0) {
-                var sql = `DELETE
-                           FROM deviceData
-                           WHERE UUID = ?`;
-                global.connection.query(sql, [deviceuuid], function (err, result) {
+        const account = global.database.collection("account");
+        const deviceData = global.database.collection("deviceData");
+       const promiseAccount = account.update({uuid: useruuid},{$pull: {devices:  deviceuuid}});
+        const promiseDeviceDelete = deviceData.deleteOne({uuid: deviceuuid});
+        const promises = [promiseAccount,promiseDeviceDelete];
+        Promise.all(promises).then(()=>{
 
-                    callback(true);
+            callback(true);
+        })
 
-                });
-            } else {
-                callback(false);
-            }
-        });
     },
 
 
     listAll: function (callback) {
 
-        var sql = `SELECT *
-                   FROM device`;
-
-        global.connection.query(sql, function (err, result) {
-            if (err) throw err;
-
-            callback(result);
-        });
+        const device = global.database.collection("device");
+        const cursor = device.find();
+        cursor.toArray().then(array=> {
+            console.log(array);
+            callback(array);
+        })
 
 
     },
+
 
     deleteAPIKey: function (deviceuuid, callback) {
 
@@ -137,195 +102,117 @@ var device = {
 
     getOnlineState: function (deviceuuid, callback) {
 
-        var sql = `SELECT online
-                   FROM deviceData
-                   WHERE uuid = ?`;
-        global.connection.query(sql, [deviceuuid], function (err, result) {
-
-            if (result[0] != undefined) {
-                callback(result[0].online);
-            } else {
-                callback(undefined);
+        const deviceData = global.database.collection("deviceData");
+        deviceData.findOne({uuid:deviceuuid}).then(result => {
+            if(result!=null&&result.online!=null) {
+                callback(result.online);
             }
-
-
-        });
-
+        })
 
     },
-
+    //TODO untested
     setOnlineState: function (state, deviceuuid, callback) {
 
-        var sql = `UPDATE deviceData
-                   SET online = ?
-                   WHERE uuid = ?`;
-        global.connection.query(sql, [state, deviceuuid], function (err, result) {
-
-            callback();
-
-
-        });
-
+        const deviceData = global.database.collection("deviceData");
+        deviceData.updateOne({uuid:deviceuuid},{$set:{online:state}}).then(()=>{
+           callback();
+        })
 
     },
 
     getDeviceTypFromDevice: function (deviceuuid, callback) {
-        const sql = `SELECT deviceUUID
-                     FROM deviceData
-                     WHERE uuid = ?`;
-        global.connection.query(sql, [deviceuuid], function (err, result) {
-            const sql_getDeviceType = `SELECT *
-                                       FROM device
-                                       WHERE UUID = ?`;
-            global.connection.query(sql_getDeviceType, [result[0].deviceUUID], function (err, result) {
-
-                callback(result[0]);
-
-
-            });
-        });
+        const deviceData = global.database.collection("deviceData");
+        const device = global.database.collection("device");
+        deviceData.findOne({uuid:deviceuuid}).then(deviceResult=>{
+            if(deviceResult!=null&&deviceResult.deviceUUID!=null) {
+                device.findOne({UUID: deviceResult.deviceUUID}).then(deviceType=>{
+                    callback(deviceType);
+                })
+            }
+        })
 
     },
 
 
     getUserSpecificDeviceInfo: function (useruuid, device, callback) {
 
+        this.checkUserDeviceAccessPermission(useruuid,device).then((access)=>{
+            if(access) {
+                const deviceData = global.database.collection("deviceData");
+                deviceData.findOne({uuid:device}).then(deviceResult=>{
+                    if(deviceResult!=null) {
+                        callback({
+                            content: deviceResult,
 
-        var sql = `SELECT name, uuid, config, deviceUUID, online, statusInfo
-                   FROM deviceData d,
-                        userDeviceAccess u
-                   WHERE (d.uuid = u.device)
-                     AND (d.uuid = ?)
-                     AND (u.user = ?)`;
-        global.connection.query(sql, [device, useruuid], function (err, result) {
-
-
-            if (result[0] === undefined) {
-
-                var sqlCheckExist = `SELECT name
-                                     FROM deviceData d
-                                     WHERE (d.uuid = ?)`;
-                global.connection.query(sqlCheckExist, [device, useruuid], function (err, exist) {
-
-
-                    if (exist[0] === undefined) {
+                        });
+                    }else{
                         callback({
                             error: true,
                             errorMessage: "Device does not exist!"
                         });
-
-                    } else {
-                        axios("http://account:3000/api/v1/account/isUserAdmin?uuid="+useruuid).then(parsed => {
-                            console.log(parsed.data.isAdmin)
-                            if (parsed.data.isAdmin) {
-                                var sql = `SELECT name, uuid, config, deviceUUID, online, statusInfo
-                                           FROM deviceData d
-                                           WHERE (d.uuid = ?)`;
-                                global.connection.query(sql, [device], function (err, result) {
-
-                                    if (result[0] === undefined) {
-                                        callback({
-                                            error: true,
-                                            errorMessage: "Device does not exist!"
-                                        });
-                                    } else {
-                                        callback({
-                                            content: result[0],
-                                            admin: true
-                                        });
-                                    }
-
-
-                                });
-                            } else {
-                                callback({
-                                    error: true,
-                                    errorMessage: "No Access!"
-                                });
-                            }
-                        });
-
-
                     }
-
-                });
-
-
-            } else {
+                })
+            }else{
                 callback({
-                    content: result[0],
-
+                    error: true,
+                    errorMessage: "No Access!"
                 });
-
             }
-
-        });
+        })
 
 
     },
 
     changeDeviceName: function (deviceUUID, newName, callback) {
-        const sql = `UPDATE deviceData
-                     SET name = ?
-                     WHERE deviceData.uuid = ?;`;
-        global.connection.query(sql, [newName, deviceUUID], function (err, result) {
-
-            callback(result);
-
-        });
+        const deviceData = global.database.collection("deviceData");
+        deviceData.updateOne({uuid: deviceUUID},{$set: {name: newName}}).then(()=>{callback(true)})
     },
 
 
-    listSpecificDevice: function (uuid, device, callback) {
-        var sql = `SELECT name, uuid, config, deviceUUID, online
-                   FROM deviceData d,
-                        userDeviceAccess u
-                   WHERE (d.uuid = u.device)
-                     AND (d.deviceUUID = ?)
-                     AND (u.user = ?)`;
-        global.connection.query(sql, [device, uuid], function (err, result) {
+    listSpecificDevice: function (useruuid, device, callback) {
 
-            callback(result);
+        const deviceData = global.database.collection("deviceData");
+        const account = global.database.collection("account");
+        account.findOne({uuid: useruuid}).then(account => {
+            if(account!=null) {
+                const ownedDevices = account.devices;
+                if(ownedDevices!=null) {
+                    const cursor =  deviceData.find({uuid: {$in: ownedDevices}, deviceUUID: device});
+                    cursor.toArray().then(deviceArray=>{
+                        callback(deviceArray)
+                    })
+                }else{
+                    callback([])
+                }
 
-        });
+
+            }
+        })
 
     },
-
+    //TODO untested
     updateStatusInfo: function (device, key, value, callback) {
 
-
-        var sql = `SELECT statusInfo
-                   FROM deviceData
-                   WHERE (uuid = ?)`;
-        global.connection.query(sql, [device], function (err, result) {
-            var statusInfoJson = JSON.parse(result[0].statusInfo);
-            console.log(value);
-            statusInfoJson[String(key)] = String(value);
-            var setSQL = `UPDATE deviceData
-                          SET statusInfo = ?
-                          WHERE uuid = ?`;
-            global.connection.query(setSQL, [JSON.stringify(statusInfoJson), device], function (err, SETresult) {
-                console.log(SETresult);
-                callback();
-
-
-            });
-
-
-        });
-
+        const deviceData = global.database.collection("deviceData");
+        deviceData.findOne({uuid:device}).then(deviceResult=>{
+            if(deviceResult!=null&&deviceResult.statusInfo!=null) {
+                const deviceStatusInfo = deviceResult.statusInfo;
+                deviceStatusInfo[key] = value;
+                deviceData.updateOne({uuid:device},{$set:{statusInfo:deviceStatusInfo}}).then(()=>{
+                    callback();
+                })
+            }
+        })
     },
 
     getStatusInfo: function (device) {
         return new Promise((resolve, reject) => {
-
-            var SQL = `SELECT statusInfo
-                       FROM deviceData
-                       WHERE (uuid = ?)`;
-            global.connection.query(SQL, [device], function (err, result) {
-                resolve(result[0].statusInfo);
-
-            });
+            const deviceData = global.database.collection("deviceData");
+            deviceData.findOne({uuid: device}).then((deviceResult)=>{
+                if(deviceResult!=null&&deviceResult.statusInfo!=null) {
+                    resolve(deviceResult.statusInfo);
+                }
+            })
 
         });
     }
