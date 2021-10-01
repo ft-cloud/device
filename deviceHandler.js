@@ -7,7 +7,7 @@ module.exports.init = function initDevicePaths() {
 
     app.get('/api/v1/device/listAvailable', (req, res) => {
 
-        if (req.query.session) {
+        if (req.query.session!=null) {
             session.validateSession(req.query.session.toString(), (isValid) => {
                 if (isValid) {
                     session.reactivateSession(req.query.session);
@@ -35,7 +35,7 @@ module.exports.init = function initDevicePaths() {
 
     app.get('/api/v1/device/listSpecificUserDevice', (req, res) => {
 
-        if (req.query.session && req.query.device) {
+        if (req.query.session!=null && req.query.device!=null) {
             session.validateSession(req.query.session.toString(), (isValid) => {
                 if (isValid) {
                     session.reactivateSession(req.query.session);
@@ -71,7 +71,7 @@ module.exports.init = function initDevicePaths() {
 
     app.get('/api/v1/device/getUserSpecificDeviceInfo', (req, res) => {
 
-        if (req.query.session && req.query.device) {
+        if (req.query.session!=null && req.query.device!=null) {
             session.validateSession(req.query.session.toString(), (isValid) => {
                 if (isValid) {
                     session.reactivateSession(req.query.session);
@@ -109,7 +109,7 @@ module.exports.init = function initDevicePaths() {
 
     app.post('/api/v1/device/changeDeviceName', (req, res) => {
 
-        if (req.body.session && req.body.device && req.body.newName) {
+        if (req.body.session!=null && req.body.device!=null && req.body.newName!=null) {
             if(req.body.newName.toString().length<4&&req.body.newName.toString().length>49) {
                 res.send(`{"success":false,"error":"String too long"}`);
                 return;
@@ -162,7 +162,7 @@ module.exports.init = function initDevicePaths() {
 
     app.get('/api/v1/device/getDeviceConfig', (req, res) => {
 
-        if (req.query.session && req.query.device) {
+        if (req.query.session!=null && req.query.device!=null) {
             session.validateSession(req.query.session.toString(), (isValid) => {
                 if (isValid) {
                     session.reactivateSession(req.query.session);
@@ -208,7 +208,7 @@ module.exports.init = function initDevicePaths() {
 
     app.get('/api/v1/device/changeStatusInfo', (req, res) => {
 
-        if (req.query.session && req.query.device && req.query.infokey && req.query.value) {
+        if (req.query.session!=null && req.query.device!=null && req.query.infokey!=null && req.query.value!=null) {
             session.validateSession(req.query.session.toString(), (isValid) => {
                 if (isValid) {
                     session.reactivateSession(req.query.session);
@@ -251,7 +251,7 @@ module.exports.init = function initDevicePaths() {
 
     app.get('/api/v1/device/getStatusInfo', (req, res) => {
 
-        if (req.query.session && req.query.deviceuuid) {
+        if (req.query.session!=null && req.query.deviceuuid!=null) {
             session.validateSession(req.query.session.toString(), (isValid) => {
                 if (isValid) {
                     session.reactivateSession(req.query.session);
@@ -300,7 +300,7 @@ module.exports.init = function initDevicePaths() {
     //TODO FIX MICROSERVICE LIVE TCP CONNECTION DEVICE DELETE BUG
     app.get('/api/v1/device/deleteDevice', (req, res) => {
 
-        if (req.query.session && req.query.deviceuuid) {
+        if (req.query.session!=null && req.query.deviceuuid!=null) {
             session.validateSession(req.query.session.toString(), (isValid) => {
                 if (isValid) {
                     session.reactivateSession(req.query.session);
@@ -363,7 +363,7 @@ module.exports.init = function initDevicePaths() {
 
     app.post('/api/v1/device/saveConfig', (req, res) => {
 
-        if (req.body.session && req.body.deviceuuid && req.body.param && req.body.value) {
+        if (req.body.session!=null && req.body.deviceuuid!=null && req.body.param!=null && req.body.value!=null) {
             session.validateSession(req.body.session.toString(), (isValid) => {
                 if (isValid) {
                     session.reactivateSession(req.body.session);
