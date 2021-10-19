@@ -211,6 +211,8 @@ var device = {
             deviceData.findOne({uuid: device}).then((deviceResult)=>{
                 if(deviceResult!=null&&deviceResult.statusInfo!=null) {
                     resolve(deviceResult.statusInfo);
+                }else{
+                    resolve("");
                 }
             })
 
