@@ -1,6 +1,8 @@
 const express = require('express');
 const https = require("https");
 const fs = require("fs");
+const cookieParser = require('cookie-parser')
+
 const app = express();
 module.exports.app = app;
 
@@ -21,6 +23,7 @@ const deviceHandler = require('./deviceHandler')
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+app.use(cookieParser())
 
 
 
