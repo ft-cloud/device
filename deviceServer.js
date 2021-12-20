@@ -1,12 +1,20 @@
-const express = require('express');
-const https = require("https");
-const fs = require("fs");
-const cookieParser = require('cookie-parser')
+import express from "express";
 
-const app = express();
-module.exports.app = app;
+import https from "https";
 
-const { MongoClient } = require("mongodb");
+import fs from "fs";
+
+import cookieParser from "cookie-parser";
+
+import {MongoClient} from "mongodb";
+
+import cors from "cors";
+
+import {initDevicePaths} from "./deviceHandler.js";
+
+export const app = express();
+
+
 const uri = `mongodb://root:${process.env.MYSQL_ROOT_PASSWORD}@mongo:27017/?authSource=admin&readPreference=primary&directConnection=true&ssl=false`
 const client = new MongoClient(uri);
 
@@ -14,13 +22,6 @@ client.connect().then(()=> {
     global.database = client.db("cloud");
 
 })
-
-const cors = require('cors');
-
-const deviceHandler = require('./deviceHandler')
-
-
-
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser())
@@ -39,7 +40,7 @@ app.listen(3000, () => {
     console.log(`Device app listening at http://localhost:3000`);
 });
 
-deviceHandler.init();
+initDevicePaths();
 
 app.use(function (err,req,res,next){
     if (res.headersSent) {

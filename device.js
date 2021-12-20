@@ -1,7 +1,6 @@
-var uuid = require('uuid');
-const axios = require('axios');
+import axios from "axios";
 
-var device = {
+export const device = {
 
 
     getDeviceConfig: function (uuid, deviceUUID, callback) {
@@ -223,6 +222,5 @@ var device = {
 };
 
 
-module.exports = device;
 
 

@@ -1,8 +1,10 @@
-const {app} = require('./deviceServer');
-const session = require('sessionlib/session');
-const device = require('./device');
+import {app} from "./deviceServer.js";
 
-module.exports.init = function initDevicePaths() {
+import {session} from "sessionlib/session.js";
+
+import {device} from "./device.js";
+
+export function initDevicePaths() {
 
 
     app.get('/api/v1/device/listAvailable', (req, res) => {
