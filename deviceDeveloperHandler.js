@@ -1,6 +1,5 @@
 import {app} from "./deviceServer.js";
 import {session} from "sessionlib/session.js";
-import {uuidV4} from "mongodb/src/utils.js";
 import {deviceDeveloper} from "./deviceDeveloper.js";
 
 export function initDeviceDeveloperPath() {
