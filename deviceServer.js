@@ -11,6 +11,7 @@ import {MongoClient} from "mongodb";
 import cors from "cors";
 
 import {initDevicePaths} from "./deviceHandler.js";
+import {initDeviceDeveloperPath} from "./deviceDeveloperHandler.js";
 
 export const app = express();
 
@@ -41,6 +42,8 @@ app.listen(3000, () => {
 });
 
 initDevicePaths();
+
+initDeviceDeveloperPath();
 
 app.use(function (err,req,res,next){
     if (res.headersSent) {
