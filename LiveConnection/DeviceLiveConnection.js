@@ -139,7 +139,7 @@ let methods = {
 function terminateConnection(socket) {
 
     if(socket.auth) {
-        device.setOnlineState(true,socket.deviceUUID,()=>{
+        device.setOnlineState(false,socket.deviceUUID,()=>{
             console.log("Device offline");
         });
     }
