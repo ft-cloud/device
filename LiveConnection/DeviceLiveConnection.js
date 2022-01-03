@@ -28,7 +28,9 @@ export function initDeviceLiveConnection() {
         socket.lastMessage = Date.now();
         socket.queue = [];
 
-        socket.write(JSON.stringify({status: 0}));
+        socket.write(JSON.stringify({status: 0})+"\n");
+
+
 
         socket.on('data', function (chunk) {
             if(socket.auth) {
@@ -44,7 +46,7 @@ export function initDeviceLiveConnection() {
 
         function checkConnection() {
             if ((Date.now() - socket.lastMessage) >= 5000) {
-                socket.write(JSON.stringify({status: -1}));
+                socket.write(JSON.stringify({status: -1})+"\n");
                 clearInterval(socket.interval);
                 terminateConnection(socket);
             }
@@ -91,7 +93,7 @@ const authHandler = {
        if(message.apiKey) {
                 device.getDeviceUUID(message.apiKey,(result)=>{
                 if(result!=null) {
-                    socket.write(JSON.stringify({status: 1}));
+                    socket.write(JSON.stringify({status: 1})+"\n");
                     socket.auth = true;
                     socket.deviceUUID = result.usedBy;
                     device.setOnlineState(true,socket.deviceUUID,()=>{
@@ -100,12 +102,12 @@ const authHandler = {
                     });
 
                 }else{
-                    socket.write(JSON.stringify({status: -2}));
+                    socket.write(JSON.stringify({status: -2})+"\n");
                     terminateConnection(socket);
                 }
             });
        }else {
-           socket.write(JSON.stringify({status: -2}));
+           socket.write(JSON.stringify({status: -2})+"\n");
            terminateConnection(socket);
        }
     }
@@ -118,9 +120,9 @@ const pingHandler = {
     },
     handle: function (message, socket) {
         if(socket.auth) {
-            socket.write(JSON.stringify({status: 1}));
+            socket.write(JSON.stringify({status: 1})+"\n");
         }else{
-            socket.write(JSON.stringify({status: 0}));
+            socket.write(JSON.stringify({status: 0})+"\n");
         }
     }
 }
