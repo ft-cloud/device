@@ -97,8 +97,8 @@ const authHandler = {
                 if(result!=null) {
                     socket.write(JSON.stringify({status: 1})+"\n");
                     socket.auth = true;
-                    socket.deviceUUID = result.usedBy;
-                    device.setOnlineState(1,socket.deviceUUID,()=>{
+                    socket.deviceUUID = result;
+                    device.setOnlineState(true,socket.deviceUUID,()=>{
                         console.log("device online");
 
                     });
@@ -139,7 +139,7 @@ let methods = {
 function terminateConnection(socket) {
 
     if(socket.auth) {
-        device.setOnlineState(0,socket.deviceUUID,()=>{
+        device.setOnlineState(true,socket.deviceUUID,()=>{
             console.log("Device offline");
         });
     }
