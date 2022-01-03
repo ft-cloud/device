@@ -29,6 +29,7 @@ export function initDeviceLiveConnection() {
         socket.queue = [];
 
         socket.write(JSON.stringify({status: 0})+"\n");
+        console.log("New Connection")
 
 
 
@@ -72,6 +73,7 @@ function handleMessage(message, socket) {
       return;
     }
 
+
     methods.handler.forEach(function (method) {
         if(method.canHandle(parsedMessage)) {
             method.handle(parsedMessage, socket);
@@ -96,7 +98,7 @@ const authHandler = {
                     socket.write(JSON.stringify({status: 1})+"\n");
                     socket.auth = true;
                     socket.deviceUUID = result.usedBy;
-                    device.setOnlineState(true,socket.deviceUUID,()=>{
+                    device.setOnlineState(1,socket.deviceUUID,()=>{
                         console.log("device online");
 
                     });
@@ -137,7 +139,7 @@ let methods = {
 function terminateConnection(socket) {
 
     if(socket.auth) {
-        device.setOnlineState(false,socket.deviceUUID,()=>{
+        device.setOnlineState(0,socket.deviceUUID,()=>{
             console.log("Device offline");
         });
     }
