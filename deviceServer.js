@@ -12,6 +12,7 @@ import cors from "cors";
 
 import {initDevicePaths} from "./deviceHandler.js";
 import {initDeviceDeveloperPath} from "./deviceDeveloperHandler.js";
+import {initDeviceLiveConnection} from "./LiveConnection/DeviceLiveConnection.js";
 
 export const app = express();
 
@@ -44,6 +45,8 @@ app.listen(3000, () => {
 initDevicePaths();
 
 initDeviceDeveloperPath();
+
+initDeviceLiveConnection();
 
 app.use(function (err,req,res,next){
     if (res.headersSent) {
