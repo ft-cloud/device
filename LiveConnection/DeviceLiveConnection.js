@@ -8,6 +8,7 @@ import {device} from "../device.js";
 const port = 8846;
 
 /*
+-3 param error
 -2 auth faild
 -1 timeout
 0 - ready waiting for auth
@@ -26,11 +27,9 @@ export function initDeviceLiveConnection() {
 
     server.on('connection', (socket) => {
         socket.lastMessage = Date.now();
-        socket.queue = [];
 
         socket.write(JSON.stringify({status: 0})+"\n");
         console.log("New Connection")
-
 
 
         socket.on('data', function (chunk) {
@@ -48,6 +47,7 @@ export function initDeviceLiveConnection() {
         function checkConnection() {
             if ((Date.now() - socket.lastMessage) >= 5000) {
                 socket.write(JSON.stringify({status: -1})+"\n");
+                console.log("closed due timeout")
                 clearInterval(socket.interval);
                 terminateConnection(socket);
             }
@@ -65,11 +65,13 @@ export function initDeviceLiveConnection() {
 }
 
 function handleMessage(message, socket) {
-    console.log(message);
+   // console.log(message);
     let parsedMessage;
     try {
         parsedMessage = JSON.parse(message);
+        console.log(parsedMessage);
     } catch (e) {
+        console.log("error");
       return;
     }
 
@@ -85,6 +87,28 @@ function handleMessage(message, socket) {
 
 }
 
+const statusUpdateHandler = {
+    canHandle: function (message) {
+        return message.type === "stateUpdate";
+    },
+    handle: function (message,socket) {
+
+        //No authentication
+        if(socket.deviceUUID==null) {
+            socket.write(JSON.stringify({status: -2})+"\n");
+            terminateConnection(socket);
+            return;
+        }
+
+        if(message.lat!=null&&message.long!=null) {
+            //device.updateStatusInfo()
+        }else{
+            socket.write(JSON.stringify({status: -3})+"\n");
+        }
+    }
+
+}
+
 
 const authHandler = {
 
@@ -92,7 +116,7 @@ const authHandler = {
         return message.type === "auth";
     },
     handle: function (message, socket) {
-       if(message.apiKey) {
+       if(message.apiKey!=null) {
                 device.getDeviceUUID(message.apiKey,(result)=>{
                 if(result!=null) {
                     socket.write(JSON.stringify({status: 1})+"\n");
@@ -131,8 +155,6 @@ const pingHandler = {
 
 let methods = {
     handler: [authHandler,pingHandler]
-
-
 }
 
 
