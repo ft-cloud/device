@@ -42,6 +42,47 @@ export const deviceDeveloper = {
 
     },
 
+    /***
+     *
+     * @param name
+     * @param type
+     * @param deviceUUID
+     * @param module
+     * @param isSettings
+     * @param defaultValue
+     * @returns {Promise<unknown>}
+     */
+
+    addVariable: function (name,type,deviceUUID,module,isSettings,defaultValue = 0) {
+        return new Promise(resolve=>{
+            const deviceDatabase = global.database.collection('device');
+            let variableUUID = uuidV4();
+            const variable = {
+                UUID: variableUUID,
+                name: name,
+                type: type,
+                defaultValue: defaultValue
+            }
+            if(isSettings){
+                let object = {};
+                object["settingsModules.$[module].variables"] = variable;
+
+                deviceDatabase.updateOne({UUID:deviceUUID},{$push: object},{arrayFilters:  [{"module.UUID":module}]}).then(()=>{
+                    resolve(variableUUID);
+                })
+
+            }else{
+                let object = {};
+                object["statusModules.$[module].variables"] = variable;
+
+                deviceDatabase.updateOne({UUID:deviceUUID},{$push: object},{arrayFilters:  [{"module.UUID":module}]}).then(()=>{
+                    resolve(variableUUID);
+                })
+
+            }
+
+        })
+    },
 
     /***
      *
