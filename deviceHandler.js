@@ -413,5 +413,138 @@ export function initDevicePaths() {
     });
 
 
+    //get status
+    //get status of device if set in module
+    //if not set in module, get default value from device
+    app.get('/api/v1/device/getStatus', (req, res) => {
+            
+            if (req.query.session!=null && req.query.deviceuuid!=null) {
+                session.validateSession(req.query.session.toString(), (isValid) => {
+                    if (isValid) {
+                        session.reactivateSession(req.query.session);
+                        session.getUserUUID(req.query.session.toString(), (uuid) => {
+                            if (uuid) {
+    
+                                device.checkUserDeviceAccessPermission(uuid,req.query.deviceuuid).then((result) => {
+    
+                                    if(result) {
+                                        device.getStatus(req.query.deviceuuid).then(r => {
+                                            res.send(`{"success":true,"data":${JSON.stringify(r)}}`);
+    
+                                        })
+    
+                                    }else{
+                                        res.send('{\"error\":\"No device permission!\",\"errorcode\":\"011\"}');
+    
+                                    }
+
+                                
+                                });
+
+                            } else {
+                                res.send('{\"error\":\"No valid account!\",\"errorcode\":\"006\"}');
+                            }
+                        });
+
+                    } else {
+                        res.send('{\"error\":\"No valid session!\",\"errorcode\":\"006\"}');
+
+                    }
+                });
+            } else {
+                res.send('{\"error\":\"No valid inputs!\",\"errorcode\":\"002\"}');
+
+            }
+        });
+
+        //get status module for device from device type
+        app.get('/api/v1/device/getStatusModules', (req, res) => {
+                
+                if (req.query.session!=null && req.query.deviceuuid!=null) {
+                    session.validateSession(req.query.session.toString(), (isValid) => {
+                        if (isValid) {
+                            session.reactivateSession(req.query.session);
+                            session.getUserUUID(req.query.session.toString(), (uuid) => {
+                                if (uuid) {
+        
+                                    device.checkUserDeviceAccessPermission(uuid,req.query.deviceuuid).then((result) => {
+        
+                                        if(result) {
+                                            device.get(req.query.deviceuuid).then(r => {
+                                                res.send(`{"success":true,"data":${JSON.stringify(r)}}`);
+        
+                                            })
+        
+                                        }else{
+                                            res.send('{\"error\":\"No device permission!\",\"errorcode\":\"011\"}');
+        
+                                        }
+        
+                                    
+                                    });
+    
+                                } else {
+                                    res.send('{\"error\":\"No valid account!\",\"errorcode\":\"006\"}');
+                                }
+                            });
+    
+                        } else {
+                            res.send('{\"error\":\"No valid session!\",\"errorcode\":\"006\"}');
+    
+                        }
+                    });
+                } else {
+                    res.send('{\"error\":\"No valid inputs!\",\"errorcode\":\"002\"}');
+    
+                }
+            });
+
+
+
+    //get status module for device from device type
+    app.get('/api/v1/device/getStatusModule', (req, res) => {
+                
+                if (req.query.session!=null && req.query.deviceuuid!=null) {
+                    session.validateSession(req.query.session.toString(), (isValid) => {
+                        if (isValid) {
+                            session.reactivateSession(req.query.session);
+                            session.getUserUUID(req.query.session.toString(), (uuid) => {
+                                if (uuid) {
+        
+                                    device.checkUserDeviceAccessPermission(uuid,req.query.deviceuuid).then((result) => {
+        
+                                        if(result) {
+                                            device.getDeviceStatusModules(req.query.deviceuuid).then(r => {
+                                                res.send(`{"success":true,"data":${JSON.stringify(r)}}`);
+        
+                                            })
+        
+                                        }else{
+                                            res.send('{\"error\":\"No device permission!\",\"errorcode\":\"011\"}');
+        
+                                        }
+        
+                                    
+                                    });
+        
+                                } else {
+                                    res.send('{\"error\":\"No valid account!\",\"errorcode\":\"006\"}');
+                                }
+                            });
+        
+                        } else {
+                            res.send('{\"error\":\"No valid session!\",\"errorcode\":\"006\"}');
+        
+                        }
+                    });
+                } else {
+                    res.send('{\"error\":\"No valid inputs!\",\"errorcode\":\"002\"}');
+        
+                }
+            });
+
+
+
+
 
 }

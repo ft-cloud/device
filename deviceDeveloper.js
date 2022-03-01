@@ -16,6 +16,19 @@ export const deviceDeveloper = {
         });
     },
 
+    isUserDev: function(userUUID,deviceUUID) {
+
+        return new Promise(resolve => {
+            const deviceDatabase = global.database.collection('device');
+            deviceDatabase.findOne({UUID:deviceUUID}).then(device=>{
+                    resolve(device.developers.includes(userUUID))
+            })
+
+
+        });
+
+    },
+
     createDevice: function(developerUUID,name) {
 
         return new Promise((resolve,reject) => {
@@ -117,7 +130,51 @@ export const deviceDeveloper = {
         });
 
 
-    }
+    },
 
+    /***
+     * 
+     * Delete a module from uuid
+     * 
+     */
+        removeModule: function (moduleUUID,deviceUUID,isSettings) {
+        return new Promise((resolve,reject) => {
+            const deviceDatabase = global.database.collection('device');
+            let object = {};
+            if(isSettings) {
+                object["settingsModules.$[module].UUID"] = moduleUUID;
+            } else{
+                object["statusModules.$[module].UUID"] = moduleUUID;
+            }
+
+            deviceDatabase.updateOne({UUID:deviceUUID},{$pull: object},{arrayFilters:  [{"module.UUID":moduleUUID}]}).then(()=>{
+                resolve();
+            });
+
+        });
+    },
+
+    /***
+     * 
+     * Delete a variable from uuid
+     * 
+     */
+
+    removeVariable: function (variableUUID,moduleUUID,deviceUUID,isSettings) {
+        return new Promise((resolve,reject) => {
+            const deviceDatabase = global.database.collection('device');
+            let object = {};
+            if(isSettings) {
+                object["settingsModules.$[module].variables.$[variable].UUID"] = variableUUID;
+            } else{
+                object["statusModules.$[module].variables.$[variable].UUID"] = variableUUID;
+            }
+
+            deviceDatabase.updateOne({UUID:deviceUUID},{$pull: object},{arrayFilters:  [{"module.UUID":moduleUUID},{"variable.UUID":variableUUID}]}).then(()=>{
+                resolve();
+            });
+
+        });
+    }
 
 }

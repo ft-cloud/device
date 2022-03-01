@@ -89,7 +89,7 @@ function handleMessage(message, socket) {
 
 const statusUpdateHandler = {
     canHandle: function (message) {
-        return message.type === "stateUpdate";
+        return message.type === "status";
     },
     handle: function (message,socket) {
 
@@ -100,8 +100,9 @@ const statusUpdateHandler = {
             return;
         }
 
-        if(message.lat!=null&&message.long!=null) {
-            //device.updateStatusInfo()
+        if(message.module!=null&&message.variable!=null&&message.value!=null) {
+            device.updateStatus(socket.decvieUUID,message.module,message.variable,message.value);
+            socket.write(JSON.stringify({status: 1})+"\n");
         }else{
             socket.write(JSON.stringify({status: -3})+"\n");
         }
@@ -121,7 +122,7 @@ const authHandler = {
                 if(result!=null) {
                     socket.write(JSON.stringify({status: 1})+"\n");
                     socket.auth = true;
-                    socket.deviceUUID = result;
+                    socket.decvieUUID = result;
                     device.setOnlineState(true,socket.deviceUUID,()=>{
                         console.log("device online");
 
@@ -154,7 +155,7 @@ const pingHandler = {
 }
 
 let methods = {
-    handler: [authHandler,pingHandler]
+    handler: [authHandler,pingHandler,statusUpdateHandler]
 }
 
 
