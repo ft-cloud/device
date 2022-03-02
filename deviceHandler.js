@@ -622,7 +622,10 @@ export function initDevicePaths() {
 
                                     });
 
+                                  const timerID =  setInterval(()=>{ws.send(JSON.stringify({"operation":"ping"}))},3000)
+
                                     ws.on('close', () => {
+                                        clearInterval(timerID);
                                         changeStream.close();
                                     })
 

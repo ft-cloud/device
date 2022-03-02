@@ -499,8 +499,8 @@ export const device = {
                             ]
                         })
                     }
-                    deviceData.updateOne({ uuid: device }, { $set: { status: deviceSettings } }).then(() => {
-                        resolve();
+                    deviceData.updateOne({ uuid: device }, { $set: { settings: deviceSettings } }).then(() => {
+                        resolve(value);
                     })
                 }
 
