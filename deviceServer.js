@@ -4,6 +4,8 @@ import https from "https";
 
 import fs from "fs";
 
+import express_ws from "express-ws";
+
 import cookieParser from "cookie-parser";
 
 import {MongoClient} from "mongodb";
@@ -29,7 +31,7 @@ app.use(express.urlencoded({extended: true}));
 app.use(cookieParser())
 app.disable('x-powered-by');
 
-
+express_ws(app);
 
 
 app.use(cors());

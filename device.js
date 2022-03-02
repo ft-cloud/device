@@ -187,7 +187,7 @@ export const device = {
         })
 
     },
-    //TODO untested
+    //@deprecated
     updateStatusInfo: function (device, key, value, callback) {
 
         const deviceData = global.database.collection("deviceData");
@@ -202,6 +202,7 @@ export const device = {
         })
     },
 
+    //@deprecated
     getStatusInfo: function (device) {
         return new Promise((resolve, reject) => {
             const deviceData = global.database.collection("deviceData");
@@ -216,7 +217,6 @@ export const device = {
         });
     },
 
-    //todo make sure to create all
     /****
      * 
      * 
@@ -326,7 +326,7 @@ export const device = {
 
             deviceData.findOne({ uuid: device }).then(deviceResult => {
                 deviceType.findOne({ UUID: deviceResult.deviceUUID }).then(deviceTypeResult => {
-                    if (deviceTypeResult != null && deviceTypeResult.statusModules != null) {
+                    if (deviceTypeResult != null && deviceTypeResult.statusModules != null&& deviceResult.status != null) {
                         const deviceStatus = deviceResult.status;
                         const deviceTypeStatus = deviceTypeResult.statusModules;
                         let status = [];
@@ -388,12 +388,150 @@ export const device = {
     },
 
 
+    getSettings: function (device) {
+        return new Promise(resolve => {
+
+            const deviceData = global.database.collection("deviceData");
+            const deviceType = global.database.collection("device");
+
+            deviceData.findOne({ uuid: device }).then(deviceResult => {
+                deviceType.findOne({ UUID: deviceResult.deviceUUID }).then(deviceTypeResult => {
+                    if (deviceTypeResult != null && deviceTypeResult.settingsModules != null && deviceResult.settings != null) {
+                        const deviceSettings = deviceResult.settings;
+                        const deviceTypeSettings = deviceTypeResult.settingsModules;
+                        let settings = [];
+                        for (let i = 0; i < deviceTypeSettings.length; i++) {
+                            let found = false;
+                            for (let j = 0; j < deviceSettings.length; j++) {
+                                if (deviceTypeSettings[i].UUID === deviceSettings[j].UUID) {
+                                    found = true;
+                                    settings.push(deviceSettings[j]);
+                                    break;
+                                }
+                            }
+                            if (!found) {
+                                settings.push({
+                                    UUID: deviceTypeSettings[i].UUID,
+                                    variables: []
+                                })
+                            }
+                        }
+
+
+                        console.log(settings);
+
+                        //add missing variables to status
+                        for (let i = 0; i < settings.length; i++) {
+                            for (let j = 0; j < deviceTypeSettings[i].variables.length; j++) {
+                                let found = false;
+                                for (let k = 0; k < settings[i].variables.length; k++) {
+                                    if (deviceTypeSettings[i].variables[j].UUID === settings[i].variables[k].UUID) {
+                                        found = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!found) {
+                                    settings[i].variables.push({
+                                        UUID: deviceTypeSettings[i].variables[j].UUID,
+                                        value: deviceTypeSettings[i].variables[j].defaultValue
+                                    })
+                                }
+                            }
+                        }
+
+
+                        resolve(settings);
+                    } else {
+                        console.log(deviceResult);
+
+                        resolve([]);
+                    }
+                }
+                )
+
+
+
+            })
+        });
+
+    },
+
+    updateSettings: function (device, module, variable, value) {
+        return new Promise(resolve => {
+            const deviceData = global.database.collection("deviceData");
+
+
+            deviceData.findOne({ uuid: device }).then(deviceResult => {
+
+
+                if (deviceResult != null && deviceResult.settings != null) {
+                    const deviceSettings = deviceResult.settings;
+                    let foundModule = false;
+                    let foundVariable = false;
+                    for (let i = 0; i < deviceSettings.length; i++) {
+                        if (deviceSettings[i].UUID === module) {
+                            foundModule = true;
+                            for (let j = 0; j < deviceSettings[i].variables.length; j++) {
+                                if (deviceSettings[i].variables[j].UUID === variable) {
+                                    foundVariable = true;
+                                    deviceSettings[i].variables[j].value = value;
+                                    break;
+                                }
+                            }
+                            if (!foundVariable) {
+                                deviceSettings[i].variables.push({
+                                    UUID: variable,
+                                    value: value
+                                })
+                            }
+                            break;
+                        }
+                    }
+                    if (!foundModule) {
+                        deviceSettings.push({
+                            UUID: module,
+                            variables: [
+                                {
+                                    UUID: variable,
+                                    value: value
+                                }
+                            ]
+                        })
+                    }
+                    deviceData.updateOne({ uuid: device }, { $set: { status: deviceSettings } }).then(() => {
+                        resolve();
+                    })
+                }
+
+            });
+
+        })
+    },
+
+
     getDeviceStatusModules: function (deviceType) {
         return new Promise(resolve => {
             const deviceTypeData = global.database.collection("device");
             deviceTypeData.findOne({ UUID: deviceType }).then(deviceTypeResult => {
                 if (deviceTypeResult != null && deviceTypeResult.statusModules != null) {
                     resolve(deviceTypeResult.statusModules);
+                } else {
+                    resolve([]);
+                }
+            })
+
+        });
+
+    },
+
+
+    getDeviceSettingsModules: function (deviceType) {
+        return new Promise(resolve => {
+            const deviceTypeData = global.database.collection("device");
+            deviceTypeData.findOne({ UUID: deviceType }).then(deviceTypeResult => {
+                if (deviceTypeResult != null && deviceTypeResult.settingsModules != null) {
+                    resolve(deviceTypeResult.settingsModules);
                 } else {
                     resolve([]);
                 }

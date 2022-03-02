@@ -39,6 +39,10 @@ export function initDeviceLiveConnection() {
             handleMessage(chunk, socket);
         });
 
+        socket.on('error',()=>{
+            terminateConnection(socket);
+        })
+
         socket.on('close', function () {
             console.log('Connection closed');
             terminateConnection(socket)
@@ -65,13 +69,13 @@ export function initDeviceLiveConnection() {
 }
 
 function handleMessage(message, socket) {
-   // console.log(message);
+    console.log(message.toString());
     let parsedMessage;
     try {
         parsedMessage = JSON.parse(message);
         console.log(parsedMessage);
     } catch (e) {
-        console.log("error");
+        console.log(e);
       return;
     }
 
@@ -101,7 +105,7 @@ const statusUpdateHandler = {
         }
 
         if(message.module!=null&&message.variable!=null&&message.value!=null) {
-            device.updateStatus(socket.decvieUUID,message.module,message.variable,message.value);
+            device.updateStatus(socket.deviceUUID,message.module,message.variable,message.value);
             socket.write(JSON.stringify({status: 1})+"\n");
         }else{
             socket.write(JSON.stringify({status: -3})+"\n");
@@ -122,7 +126,7 @@ const authHandler = {
                 if(result!=null) {
                     socket.write(JSON.stringify({status: 1})+"\n");
                     socket.auth = true;
-                    socket.decvieUUID = result;
+                    socket.deviceUUID = result;
                     device.setOnlineState(true,socket.deviceUUID,()=>{
                         console.log("device online");
 
